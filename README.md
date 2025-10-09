@@ -1,60 +1,82 @@
-Cinema Management System
-A console-based application for managing a cinema, created as a project for the "Software Development Tools" course. This project demonstrates a complete development cycle using Git, from repository creation and branching to unit testing and finalizing work with a Pull Request.
+# Cinema Management System
 
-Features
-Interactive Menu: A user-friendly console interface for navigating all features.
+A console-based application for managing a cinema. This project was created as part of the **"Software Development Tools"** course and demonstrates the full development cycle using Git — from repository creation and branching to writing unit tests and completing work through a Pull Request.
 
-Movie Catalog: Manage a list of movies, search by title, and add new entries.
+---
 
-Screening Schedule: Create and view showtimes for any movie in the catalog.
+## Description
 
-Booking System: Book tickets for specific screenings and cancel existing bookings.
+The program provides basic functionality for managing a cinema: handling a movie catalog, creating screening schedules, booking tickets, and canceling bookings. The interface is a user-friendly console menu.
 
-Requirements
-Python 3.8+
+## Features
 
-Run
-Clone the repository:
+- **Interactive Menu** — navigate all features through a console interface.
+- **Movie Catalog** — view, search by title, and add new movies.
+- **Screening Schedule** — create and view showtimes for any movie.
+- **Booking System** — book tickets for specific screenings and cancel existing bookings.
 
-git clone <your-repository-url>
+## Requirements
 
-Navigate to the project root directory:
+- Python 3.8 or newer
 
-cd <your-repository-name>
+## How to Run
 
-Run the application:
+1. Clone the repository:
 
+```bash
+git clone <https://github.com/rina4203/unit-testing-laba>
+```
+
+2. Navigate to the project root:
+
+```bash
+cd <unit-testing-laba>
+```
+
+3. Run the application:
+
+```bash
 python cinema_system/main.py
+```
 
-The application will start, displaying an interactive menu in your console.
+Once launched, the program will display an interactive console menu.
 
-Testing
-This project uses Python's built-in unittest framework. The tests cover all core functionalities, including movie management, screening creation, and the booking lifecycle.
+## Testing
 
-To run tests:
+The project uses Python’s built-in `unittest` framework. The tests cover core functionality — movie management, screening creation, and the booking lifecycle.
 
-From the project root, run the following command:
+Run tests from the project root:
 
+```bash
 python -m unittest discover tests
+```
 
-Project Structure
+## Project Structure
+
+```
 .
 ├── cinema_system/
-│   ├── main.py           # Main application entry point and user interface
+│   ├── main.py           # Main entry point and console interface
 │   └── movie_manager.py  # Core logic (Movie, Screening, CinemaManager classes)
 ├── tests/
 │   └── test_cinema_manager.py # Unit tests for the core logic
-├── .gitignore            # Specifies intentionally untracked files to ignore
+├── .gitignore            # Ignored files and directories
 ├── LICENSE               # MIT License file
 └── README.md             # This file
+```
 
-Contributing & Lab Work Notes
-This repository is an educational project. The primary goal is to demonstrate a proper Git workflow:
+## Contributing & Lab Notes
 
-Branching: All new features (like the unit tests) are developed in separate feature branches (e.g., feature/unit-tests).
+This repository is an educational project. Its goal is to demonstrate a proper Git workflow:
 
-Committing: Changes are saved through small, logical commits with descriptive messages.
+- **Branching:** all new features (like unit tests) are developed in dedicated feature branches (e.g., `feature/unit-tests`).
+- **Committing:** changes are saved through small, logical commits with descriptive messages.
+- **Pull Requests:** completed work is reviewed and merged via Pull Request.
 
-Pull Requests: Completed work is submitted for review and merging via a Pull Request.
+Feel free to open issues or suggest improvements.
 
-Please feel free to open any issues or suggest any suggestions.
+## License
+
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
+
+

@@ -1,3 +1,4 @@
+
 # movie_manager.py
 import json
 import uuid
@@ -146,4 +147,3 @@ class CinemaManager:
         
         self.bookings.remove(booking_to_cancel)
         return True
-

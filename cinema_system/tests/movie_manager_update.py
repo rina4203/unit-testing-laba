@@ -1,12 +1,13 @@
+# movie_manager.py
 import json
 import uuid
-from dataclasses import dataclass, field, asdict
-from typing import List, Optional, Dict, Any
+from dataclasses import dataclass, field
+from typing import List, Optional
+from datetime import datetime
 
 
 @dataclass
 class Movie:
-    """Клас для представлення фільму з розширеними атрибутами."""
     title: str
     year: int
     director: str
@@ -16,6 +17,7 @@ class Movie:
     rating: float = 0.0
 
     def __post_init__(self):
+        # Валідація даних
         if not (0 <= self.rating <= 10):
             raise ValueError("Рейтинг має бути в межах від 0 до 10.")
         if self.year < 1888:
@@ -25,9 +27,8 @@ class Movie:
 
 @dataclass
 class Screening:
-    """Клас для представлення кіносеансу."""
     movie_title: str
-    screening_time: str  # Наприклад, "2023-10-27 19:00"
+    screening_time: str
     total_seats: int
     screening_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     booked_seats: int = 0
@@ -38,15 +39,12 @@ class Screening:
 
 @dataclass
 class Booking:
-    """Клас для представлення бронювання."""
     screening_id: str
     movie_title: str
     num_tickets: int
     booking_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
-
 def create_default_movies() -> List[Movie]:
-    """Створює та повертає початкову колекцію з 10 фільмів."""
     return [
         Movie("Втеча з Шоушенка", 1994, "Френк Дарабонт", ["Драма"], ["Тім Роббінс", "Морган Фрімен"], 142, 9.3),
         Movie("Хрещений батько", 1972, "Френсіс Форд Коппола", ["Кримінал", "Драма"], ["Марлон Брандо", "Аль Пачіно"], 175, 9.2),
@@ -62,7 +60,6 @@ def create_default_movies() -> List[Movie]:
 
 
 class CinemaManager:
-    """Головний клас для управління кінотеатром: фільмами, сеансами та бронюваннями."""
 
     def __init__(self, movies: Optional[List[Movie]] = None):
         self._movies: List[Movie] = movies if movies is not None else create_default_movies()
@@ -73,33 +70,33 @@ class CinemaManager:
         return self._movies
         
     def add_movie(self, movie: Movie):
-        """Додає фільм до колекції, якщо його ще немає."""
         for m in self._movies:
             if m.title.lower() == movie.title.lower() and m.year == movie.year:
                 return
         self._movies.append(movie)
 
     def find_movie_by_title(self, title_query: str) -> List[Movie]:
-        """Знаходить фільми, назва яких містить запит."""
         return [m for m in self._movies if title_query.lower() in m.title.lower()]
 
-
     def add_screening(self, movie_title: str, screening_time: str, total_seats: int) -> Optional[Screening]:
-        """Додає новий сеанс для фільму, якщо такий фільм існує."""
+        try:
+            datetime.strptime(screening_time, '%Y-%m-%d %H:%M')
+        except ValueError:
+            return None
         found_movies = [m for m in self._movies if m.title.lower() == movie_title.lower()]
-        if not found_movies:
+        if len(found_movies) != 1:
             return None
         
-        new_screening = Screening(movie_title=found_movies[0].title, screening_time=screening_time, total_seats=total_seats)
+        movie = found_movies[0]
+        new_screening = Screening(movie_title=movie.title, screening_time=screening_time, total_seats=total_seats)
         self.screenings.append(new_screening)
         return new_screening
 
     def get_screenings_for_movie(self, movie_title: str) -> List[Screening]:
-        """Повертає всі сеанси для вказаного фільму."""
-        return [s for s in self.screenings if movie_title.lower() in s.movie_title.lower()]
+        found_screenings = [s for s in self.screenings if movie_title.lower() == s.movie_title.lower()]
+        return sorted(found_screenings, key=lambda s: s.screening_time)
 
     def get_screening_by_id(self, screening_id: str) -> Optional[Screening]:
-        """Знаходить сеанс за його ID."""
         for screening in self.screenings:
             if screening.screening_id == screening_id:
                 return screening
@@ -107,7 +104,9 @@ class CinemaManager:
 
 
     def book_tickets(self, screening_id: str, num_tickets: int) -> Optional[Booking]:
-        """Бронює квитки на сеанс."""
+        if not isinstance(num_tickets, int):
+            return None
+
         screening = self.get_screening_by_id(screening_id)
         if not screening:
             return None
@@ -125,7 +124,6 @@ class CinemaManager:
         return new_booking
 
     def cancel_booking(self, booking_id: str) -> bool:
-        """Скасовує бронювання та повертає квитки."""
         booking_to_cancel = next((b for b in self.bookings if b.booking_id == booking_id), None)
         
         if not booking_to_cancel:
@@ -133,7 +131,7 @@ class CinemaManager:
 
         screening = self.get_screening_by_id(booking_to_cancel.screening_id)
         if screening:
-            screening.booked_seats -= booking_to_cancel.num_tickets
+            screening.booked_seats = max(0, screening.booked_seats - booking_to_cancel.num_tickets)
         
         self.bookings.remove(booking_to_cancel)
         return True

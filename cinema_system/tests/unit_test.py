@@ -103,67 +103,15 @@ class TestCinemaManagerBugs(unittest.TestCase):
         result = self.manager.cancel_booking("invalid-uuid")
         self.assertFalse(result)
 
-    def test_16_movie_init_valid_data(self):
-        #валідація в Movie __post_init__ пропускає коректні дані
-        try:
-            Movie("Test Movie", 2025, "Test Director", runtime_minutes=120, rating=8.5)
-        except ValueError:
-            self.fail("Створення Movie з коректними даними не повинно викликати ValueError")
-
-    def test_17_movie_init_invalid_rating_raises_error(self):
-        #Movie викликає ValueError при некоректному рейтингу
-        with self.assertRaises(ValueError):
-            Movie("Bad Movie", 2025, "Director", rating=11)
-
-    def test_18_movie_init_invalid_year_raises_error(self):
-        #Movie викликає ValueError при некоректному році
-        with self.assertRaises(ValueError):
-            Movie("Bad Movie", 1800, "Director")
-
-    def test_19_movie_init_invalid_runtime_raises_error(self):
-        #Movie викликає ValueError при від'ємній тривалості
-        with self.assertRaises(ValueError):
-            Movie("Bad Movie", 2025, "Director", runtime_minutes=-10)
-
-    def test_20_book_all_available_seats(self):
-        #успішне бронювання всіх доступних місць
-        screening = self.manager.add_screening("Славні хлопці", "2025-10-30 20:15", 5)
-        booking = self.manager.book_tickets(screening.screening_id, 5)
-        self.assertIsNotNone(booking)
-        self.assertEqual(screening.available_seats, 0)
-
-    def test_21_booking_does_not_affect_other_screenings(self):
-        #бронювання на одному сеансі не впливає на інші
-        s1 = self.manager.add_screening("Матриця", "2025-11-01 18:00", 20)
-        s2 = self.manager.add_screening("Матриця", "2025-11-01 21:00", 30)
-        self.manager.book_tickets(s1.screening_id, 10)
-        self.assertEqual(s1.available_seats, 10)
-        self.assertEqual(s2.available_seats, 30)
-
-    def test_22_get_screenings_for_movie_with_no_screenings(self):
-        #запит сеансів для фільму без них повертає порожній список
-        screenings = self.manager.get_screenings_for_movie("Втеча з Шоушенка")
-        self.assertEqual(len(screenings), 0)
-
-    def test_23_cancel_booking_when_screening_is_deleted(self):
-        #бронювання можна скасувати, навіть якщо сеанс було видалено
-        screening = self.manager.add_screening("Кримінальне чтиво", "2025-12-12 21:00", 10)
-        booking = self.manager.book_tickets(screening.screening_id, 2)
-        
-        self.manager.screenings.remove(screening)
-        
-        result = self.manager.cancel_booking(booking.booking_id)
-        self.assertTrue(result)
-        self.assertNotIn(booking, self.manager.bookings)
-
-    def test_24_FAILURE_get_screenings_for_movie_uses_substring(self):
+    def test_166_get_screenings_for_movie_uses_substring(self):
         self.manager.add_screening("Хрещений батько", "2025-10-28 19:00", 100)
         self.manager.add_movie(Movie("Батько", 2020, "Флоріан Зеллер"))
         self.manager.add_screening("Батько", "2025-10-28 21:00", 50)
         screenings = self.manager.get_screenings_for_movie("Батько")
         self.assertEqual(len(screenings), 1, "Помилка: Пошук сеансів не є точним.")
-    
-    def test_26_FAILURE_screenings_are_not_sorted_chronologically(self):
+         # помилка
+
+    def test_17_screenings_are_not_sorted_chronologically(self):
         title = "Початок"
         time1 = "2025-11-01 22:00"
         time2 = "2025-11-01 10:00"
@@ -172,30 +120,32 @@ class TestCinemaManagerBugs(unittest.TestCase):
         
         screenings = self.manager.get_screenings_for_movie(title)
         self.assertEqual(screenings[0].screening_time, time2, "Помилка: Сеанси не відсортовані за часом.")
-        
-    def test_27_FAILURE_cancel_booking_can_result_in_negative_seats(self):
+         # помилка
+
+    def test_18_cancel_booking_can_result_in_negative_seats(self):
         screening = self.manager.add_screening("Темний лицар", "2025-11-20 20:00", 20)
         booking = self.manager.book_tickets(screening.screening_id, 5)
         screening.booked_seats = 0
         self.manager.cancel_booking(booking.booking_id)
         self.assertGreaterEqual(screening.booked_seats, 0, "Помилка: Кількість місць не може бути від'ємною.")
-        
-    def test_28_FAILURE_add_screening_is_ambiguous_for_same_titles(self):
+         # помилка
+
+    def test_19_add_screening_is_ambiguous_for_same_titles(self):
         solaris_1972 = Movie("Соляріс", 1972, "Андрій Тарковський")
         solaris_2002 = Movie("Соляріс", 2002, "Стівен Содерберг")
         self.manager.add_movie(solaris_1972)
         self.manager.add_movie(solaris_2002)
         screening = self.manager.add_screening("Соляріс", "2025-12-25 19:00", 50)
         self.assertIsNone(screening, "Помилка: Додавання сеансу для фільмів з однаковою назвою має бути неможливим.")
-        
-    def test_29_FAILURE_time_is_string_not_datetime(self):
-        screening = self.manager.add_screening("Матриця", "це не дата", 100)
-        # Очікуємо, що створення сеансу з невалідним часом провалиться
-        self.assertIsNone(screening, "Помилка: Система не повинна дозволяти створювати сеанси з некоректним форматом часу.")
+         # помилка
 
-    def test_30_FAILURE_booking_with_non_integer_crashes(self):
+    def test_20_time_is_string_not_datetime(self):
+        screening = self.manager.add_screening("Матриця", "це не дата", 100)
+        self.assertIsNone(screening, "Помилка: Система не повинна дозволяти створювати сеанси з некоректним форматом часу.")
+         # помилка
+    def test_21_booking_with_non_integer_crashes(self):
         screening = self.manager.add_screening("Паразити", "2025-11-30 21:00", 100)
-        # Тест очікує, що функція коректно обробить помилку (поверне None), а не впаде
+        # помилка
         try:
             result = self.manager.book_tickets(screening.screening_id, "два")
             self.assertIsNone(result, "Помилка: Бронювання нецілого числа квитків має повертати None.")

@@ -73,6 +73,8 @@ This repository is an educational project. Its goal is to demonstrate a proper G
 
 Feel free to open issues or suggest improvements.
 
+## Documentation
+
 ## License
 
 This project is licensed under the **MIT License**. See the `LICENSE` file for details.

@@ -1,0 +1,61 @@
+name: Deploy Doxygen Docs to GitHub Pages
+
+# Тригер: запускати при кожному push у гілку 'main'
+on:
+  push:
+    branches:
+      - main
+      - feature/docs-ci
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  # Завдання, яке генерує документацію
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Отримуємо код репозиторію
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      # 2. Встановлюємо Doxygen та Graphviz (для діаграм)
+      - name: Install Doxygen and Graphviz
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y doxygen graphviz
+
+      # 3. Генеруємо документацію (використовуючи Doxyfile з вашого репозиторію)
+      - name: Generate Doxygen Documentation
+        run: |
+          doxygen
+          touch ./docs/html/.nojekyll
+
+      # 4. Налаштовуємо GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # 5. Завантажуємо згенеровані файли як артефакт
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './docs/html'
+
+  deploy:
+    # Потребує успішного завершення 'build'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      # 1. Публікуємо артефакт на GitHub Pages
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

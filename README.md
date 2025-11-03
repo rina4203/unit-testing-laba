@@ -73,6 +73,34 @@ This repository is an educational project. Its goal is to demonstrate a proper G
 
 Feel free to open issues or suggest improvements.
 
+## Documentation
+
+This project's documentation is automatically generated from in-code comments using **Doxygen** and **Graphviz**.
+
+### Local Generation
+
+If you wish to generate the documentation on your local machine:
+
+1.  **Install Doxygen and Graphviz:**
+
+      * [Doxygen (doxygen.exe)](https://www.doxygen.nl/download.html)
+      * [Graphviz (dot.exe)](https://graphviz.org/download/)
+
+2.  **Configure `Doxyfile`:**
+    Ensure the `Doxyfile` correctly points to your Graphviz installation in the `DOT_PATH` variable (e.g., `DOT_PATH = "C:/Program Files/Graphviz/bin"`).
+
+3.  **Run the command** from the project's root directory:
+
+    ```bash
+    doxygen
+    ```
+
+4.  **Open the result** in your browser:
+
+    ```bash
+    # (for Windows)
+    start docs/html/index.html
+    ```
 ## License
 
 This project is licensed under the **MIT License**. See the `LICENSE` file for details.

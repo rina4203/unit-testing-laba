@@ -1,56 +1,45 @@
 #!/usr/bin/env python3
 """!
 @file movie_manager.py
-@author Filonenko (rina4203)
-@version 1.1
+@author Filonenko Daryna (rina4203)
+@version 2.1
 @date 2025-11-12
-@brief Module defining the core business logic for the cinema system.
+@brief Module defining the core business logic and data models for the cinema system.
 
 @details
     This module contains the entity classes (dataclasses) `Movie`, `Screening`, `Booking`,
-    and the main service class `CinemaManager`, which handles all operations.
-    It is responsible for managing the movie catalog, screening schedules, and
-    ticket bookings.
+    and the main service class `CinemaManager`. This version includes
+    bug fixes identified during unit testing.
 
-
+@see main.py, unit_test.py
 """
 
 import json
 import uuid
-from dataclasses import dataclass, field, asdict
-from typing import List, Optional, Dict, Any
+from dataclasses import dataclass, field
+from typing import List, Optional
+from datetime import datetime
 
-# --- Data Classes ---
 
 @dataclass
 class Movie:
     """!
     @brief A data container class (dataclass) for representing a movie.
-    
-    @details
-        Stores all key information about a movie, such as title, year,
-        director, genres, actors, runtime, and rating.
-        Performs validation on the data immediately after object creation.
+    @details Stores all key information about a movie.
     """
-    title: str
-    year: int
-    director: str
-    genres: List[str] = field(default_factory=list)
-    actors: List[str] = field(default_factory=list)
-    runtime_minutes: int = 0
-    rating: float = 0.0
+    title: str              ##< The title of the movie.
+    year: int               ##< The release year of the movie.
+    director: str           ##< The director of the movie.
+    genres: List[str] = field(default_factory=list)     ##< A list of genres.
+    actors: List[str] = field(default_factory=list)     ##< A list of main actors.
+    runtime_minutes: int = 0  ##< The runtime of the movie in minutes.
+    rating: float = 0.0     ##< The movie's rating (e.g., out of 10.0).
 
     def __post_init__(self):
         """!
-        @brief Performs field validation after object initialization.
-        
-        @details
-            This method is automatically called by the dataclass.
-            It checks if the rating, year, and runtime
-            are within acceptable ranges.
-            
+        @brief Validates data after object initialization.
         @throws ValueError If the rating is outside the range [0, 10].
-        @throws ValueError If the release year is earlier than 1888 (the first film).
+        @throws ValueError If the release year is earlier than 1888.
         @throws ValueError If the film runtime is negative.
         """
         if not (0 <= self.rating <= 10):
@@ -64,28 +53,19 @@ class Movie:
 class Screening:
     """!
     @brief A data container class (dataclass) for representing a movie screening.
-    
-    @details
-        Stores information about the movie title, screening time,
-        total seats, and booked seats.
-        Automatically generates a unique `screening_id` (UUIDv4) upon creation.
+    @details Stores information about the showtime, movie, and seat capacity.
     """
-    movie_title: str
-    screening_time: str  # Example: "2023-10-27 19:00"
-    total_seats: int
-    screening_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    booked_seats: int = 0
+    movie_title: str        ##< The title of the movie being shown.
+    screening_time: str     ##< The time of the screening in 'YYYY-MM-DD HH:MM' format.
+    total_seats: int        ##< The total number of seats in the theater.
+    screening_id: str = field(default_factory=lambda: str(uuid.uuid4())) ##< Unique ID for the screening (UUIDv4).
+    booked_seats: int = 0   ##< The number of seats already booked.
 
     @property
     def available_seats(self) -> int:
         """!
-        @brief A computed property to get the number of available seats.
-        
-        @details
-            Dynamically calculates the number of free seats as the difference
-            between total seats and booked seats.
-            
-        @return int The number of available seats (total_seats - booked_seats).
+        @brief Calculates the number of available seats.
+        @return The number of seats available for booking.
         """
         return self.total_seats - self.booked_seats
 
@@ -93,29 +73,18 @@ class Screening:
 class Booking:
     """!
     @brief A data container class (dataclass) for representing a booking.
-    
-    @details
-        Stores a reference to the screening ID, the movie title, and
-        the number of tickets booked.
-        Automatically generates a unique `booking_id` (UUIDv4) upon creation.
+    @details Links a user (implicitly) to a specific screening and number of tickets.
     """
-    screening_id: str
-    movie_title: str
-    num_tickets: int
-    booking_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    screening_id: str       ##< The ID of the screening being booked.
+    movie_title: str        ##< The title of the movie (for convenience).
+    num_tickets: int        ##< The number of tickets booked.
+    booking_id: str = field(default_factory=lambda: str(uuid.uuid4())) ##< Unique ID for the booking (UUIDv4).
 
-
-# --- Helper Function ---
 
 def create_default_movies() -> List[Movie]:
     """!
-    @brief Creates and returns an initial collection of 10 movies.
-    
-    @details
-        Used for the initial population of `CinemaManager`
-        if no other list of movies is provided.
-        
-    @return List[Movie] A list of `Movie` objects.
+    @brief Creates an initial list of movies.
+    @return A list of Movie objects with test data.
     """
     return [
         Movie("The Shawshank Redemption", 1994, "Frank Darabont", ["Drama"], ["Tim Robbins", "Morgan Freeman"], 142, 9.3),
@@ -131,46 +100,37 @@ def create_default_movies() -> List[Movie]:
     ]
 
 
-# --- Main Service Class ---
-
 class CinemaManager:
     """!
-    @brief The main class for managing the cinema.
+    @brief The main class for managing the cinema's operations.
     
     @details
-        Aggregates and manages the collections of movies (_movies),
-        screenings (screenings), and bookings (bookings).
-        Provides a public API for interacting with the system (add,
-        find, book, cancel).
+        Aggregates and manages the collections of movies, screenings, and bookings.
+        Provides a public API for interacting with the system.
         
     @example
     @code
-        # Initialize the manager
         manager = CinemaManager()
+        # Add a screening for an existing movie
+        s = manager.add_screening("The Matrix", "2025-12-01 21:00", 100)
         
-        # Add a screening
-        manager.add_screening("The Matrix", "2025-12-01 21:00", 100)
-        
-        # Find the screening
-        s_list = manager.get_screenings_for_movie("The Matrix")
-        s_id = s_list[0].screening_id
-        
-        # Book tickets
-        booking = manager.book_tickets(s_id, 2)
-        
-        # Cancel the booking
-        if booking:
-            manager.cancel_booking(booking.booking_id)
+        if s:
+            # Book tickets
+            booking = manager.book_tickets(s.screening_id, 2)
+            if booking:
+                # Cancel the booking
+                manager.cancel_booking(booking.booking_id)
     @endcode
+    @see Movie, Screening, Booking
     """
 
     def __init__(self, movies: Optional[List[Movie]] = None):
         """!
         @brief Constructor for the CinemaManager class.
         @param movies
-            An optional list of movies for initialization.
-            If `None`, the default list from
-            `create_default_movies()` will be used.
+            An optional list of movies. If `None`,
+            the default list is loaded.
+        @see create_default_movies()
         """
         self._movies: List[Movie] = movies if movies is not None else create_default_movies()
         self.screenings: List[Screening] = []
@@ -179,89 +139,77 @@ class CinemaManager:
     def get_all_movies(self) -> List[Movie]:
         """!
         @brief Returns the complete list of movies.
-        @return List[Movie] A list of all movies stored in the manager.
+        @return List[Movie] A list of all movies.
         """
         return self._movies
         
     def add_movie(self, movie: Movie) -> None:
         """!
         @brief Adds a new movie to the collection.
-        
-        @details
-            Performs a check for duplicates based on title (case-insensitive)
-            and year. If a duplicate is found,
-            the addition is ignored.
-            
+        @note If a duplicate (by title and year) is found, the addition is ignored.
         @param movie The `Movie` object to add.
         @return None
         """
         for m in self._movies:
             if m.title.lower() == movie.title.lower() and m.year == movie.year:
-                return  # Ignore if duplicate
+                return
         self._movies.append(movie)
 
     def find_movie_by_title(self, title_query: str) -> List[Movie]:
         """!
-        @brief Finds movies by a partial title.
-        
-        @details
-            The search is case-insensitive.
-            It checks if `title_query` is a substring of the movie titles.
-            
-        @param title_query The string to search for in movie titles.
-        @return List[Movie] A list of movies matching the query.
+        @brief Finds movies by a partial title (substring search).
+        @param title_query The string to search for (case-insensitive).
+        @return List[Movie] A list of found movies.
         """
         return [m for m in self._movies if title_query.lower() in m.title.lower()]
 
     def add_screening(self, movie_title: str, screening_time: str, total_seats: int) -> Optional[Screening]:
         """!
-        @brief Adds a new screening for an existing movie.
+        @brief Adds a new screening (with validation).
         
-        @details
-            Searches for a movie by its **exact** title (case-insensitive).
-            If the movie is found, creates a new `Screening` object
-            and adds it to the `self.screenings` list.
-            
         @note
-            If multiple movies exist with the same title
-            (e.g., remakes), this method will add the screening for the first one found.
+            Will return `None` if:
+            1. The `screening_time` format is not 'YYYY-MM-DD HH:MM'.
+            2. Exactly one movie with `movie_title` is not found (i.e., 0 or >1 matches).
             
         @param movie_title The exact title of the movie.
-        @param screening_time The screening time as a string (e.g., "2025-10-28 21:00").
-        @param total_seats The total number of seats in the theater (must be > 0).
+        @param screening_time The time string (e.g., '2025-10-28 21:00').
+        @param total_seats The total number of seats.
         
-        @return Optional[Screening]
-            The created `Screening` object on success,
-            or `None` if the movie was not found.
+        @return Optional[Screening] The created `Screening` object, or `None` if validation fails.
         """
-        # Find movie by exact title
+        try:
+            # 1. Validate time format
+            datetime.strptime(screening_time, '%Y-%m-%d %H:%M')
+        except ValueError:
+            return None # Invalid time format
+            
+        # 2. Find movie by exact title
         found_movies = [m for m in self._movies if m.title.lower() == movie_title.lower()]
-        if not found_movies:
-            return None  # Movie not found
         
-        # Use the canonical movie title (with correct capitalization)
-        canonical_title = found_movies[0].title
+        # 3. Check for ambiguity or no-match
+        if len(found_movies) != 1:
+            return None # Movie not found or title is ambiguous
         
-        new_screening = Screening(
-            movie_title=canonical_title, 
-            screening_time=screening_time, 
-            total_seats=total_seats
-        )
+        movie = found_movies[0]
+        new_screening = Screening(movie_title=movie.title, screening_time=screening_time, total_seats=total_seats)
         self.screenings.append(new_screening)
         return new_screening
 
     def get_screenings_for_movie(self, movie_title: str) -> List[Screening]:
         """!
-        @brief Gets all screenings for a specific movie.
+        @brief Gets all screenings for a movie, sorted chronologically.
         
         @details
-            The search is performed using a partial title match
-            (case-insensitive).
+            Finds screenings by **exact** title match (case-insensitive)
+            and returns them sorted by `screening_time`.
             
-        @param movie_title The movie title to search for (can be partial).
-        @return List[Screening] A list of screenings for that movie.
+        @param movie_title The exact movie title to search for.
+        @return List[Screening] A chronologically sorted list of screenings (can be empty).
         """
-        return [s for s in self.screenings if movie_title.lower() in s.movie_title.lower()]
+        found_screenings = [s for s in self.screenings if movie_title.lower() == s.movie_title.lower()]
+        # Sort by the time string
+        return sorted(found_screenings, key=lambda s: s.screening_time)
 
     def get_screening_by_id(self, screening_id: str) -> Optional[Screening]:
         """!
@@ -275,32 +223,34 @@ class CinemaManager:
                 return screening
         return None
 
+
     def book_tickets(self, screening_id: str, num_tickets: int) -> Optional[Booking]:
         """!
         @brief Books a specified number of tickets for a screening.
         
         @details
-            Checks if the screening exists, if `num_tickets` is a positive
-            number, and if there are enough available seats.
-            If all conditions are met, updates `booked_seats`
-            on the screening and creates a new `Booking` object.
+            Validates that `num_tickets` is an integer.
+            Checks if the screening exists and has enough available seats.
             
         @param screening_id The ID of the screening to book.
-        @param num_tickets The number of tickets to book.
+        @param num_tickets The number of tickets (must be an `int` > 0).
         
         @return Optional[Booking]
             The created `Booking` object on success,
-            or `None` if the booking failed
-            (invalid ID, not enough seats, 0 or negative
-            number of tickets).
+            or `None` if validation fails.
+        @see Booking, Screening.available_seats
         """
+        # 1. Validate input type
+        if not isinstance(num_tickets, int):
+            return None
+
         screening = self.get_screening_by_id(screening_id)
         
-        # Validation 1: Screening must exist
+        # 2. Validate screening existence
         if not screening:
             return None
         
-        # Validation 2: Must book a positive number of tickets and seats must be available
+        # 3. Validate ticket count and availability
         if not (0 < num_tickets <= screening.available_seats):
             return None
         
@@ -324,34 +274,24 @@ class CinemaManager:
             Finds the booking by `booking_id`. If found,
             it locates the corresponding screening and returns
             the booked tickets (decrements `booked_seats`).
-            It then removes the `Booking` object from the `self.bookings` list.
             
         @note
-            If the screening associated with the booking was deleted,
-            the booking will still be canceled (removed from the list),
-            but the seats will not be returned.
+            Uses `max(0, ...)` to prevent the seat count from ever
+            becoming negative, ensuring data integrity.
             
         @param booking_id The unique ID of the booking to cancel.
         
-        @return bool `True` if the booking was successfully found
-                     and canceled, `False` otherwise.
+        @return bool `True` if cancellation was successful, `False` otherwise.
         """
-        # Find the booking by ID
         booking_to_cancel = next((b for b in self.bookings if b.booking_id == booking_id), None)
         
         if not booking_to_cancel:
-            return False  # Booking not found
+            return False
 
-        # Find the corresponding screening
         screening = self.get_screening_by_id(booking_to_cancel.screening_id)
-        
-        # Return the seats if the screening still exists
         if screening:
-            screening.booked_seats -= booking_to_cancel.num_tickets
-            # Prevent negative seat counts if booking was "stale"
-            if screening.booked_seats < 0:
-                screening.booked_seats = 0
+            # Return seats, ensuring the count cannot go below zero
+            screening.booked_seats = max(0, screening.booked_seats - booking_to_cancel.num_tickets)
         
-        # Remove the booking
         self.bookings.remove(booking_to_cancel)
         return True

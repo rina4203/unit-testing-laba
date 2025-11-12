@@ -12,6 +12,7 @@
     It is responsible for managing the movie catalog, screening schedules, and
     ticket bookings.
 
+@see main.py
 """
 
 import json
@@ -29,16 +30,15 @@ class Movie:
     @details
         Stores all key information about a movie, such as title, year,
         director, genres, actors, runtime, and rating.
-        Performs validation on the data immediately after object creation
-        using the `__post_init__` method.
+        Performs validation on the data immediately after object creation.
     """
-    title: str
-    year: int
-    director: str
-    genres: List[str] = field(default_factory=list)
-    actors: List[str] = field(default_factory=list)
-    runtime_minutes: int = 0
-    rating: float = 0.0
+    title: str              ##< The title of the movie.
+    year: int               ##< The release year of the movie.
+    director: str           ##< The director of the movie.
+    genres: List[str] = field(default_factory=list)     ##< A list of genres.
+    actors: List[str] = field(default_factory=list)     ##< A list of main actors.
+    runtime_minutes: int = 0  ##< The runtime of the movie in minutes.
+    rating: float = 0.0     ##< The movie's rating (e.g., out of 10.0).
 
     def __post_init__(self):
         """!
@@ -70,11 +70,11 @@ class Screening:
         total seats, and booked seats.
         Automatically generates a unique `screening_id` (UUIDv4) upon creation.
     """
-    movie_title: str
-    screening_time: str  # Example: "2023-10-27 19:00"
-    total_seats: int
-    screening_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    booked_seats: int = 0
+    movie_title: str        ##< The title of the movie being shown.
+    screening_time: str     ##< The time of the screening (e.g., "2023-10-27 19:00").
+    total_seats: int        ##< The total number of seats in the theater.
+    screening_id: str = field(default_factory=lambda: str(uuid.uuid4())) ##< Unique ID for the screening (UUIDv4).
+    booked_seats: int = 0   ##< The number of seats already booked.
 
     @property
     def available_seats(self) -> int:
@@ -99,10 +99,10 @@ class Booking:
         the number of tickets booked.
         Automatically generates a unique `booking_id` (UUIDv4) upon creation.
     """
-    screening_id: str
-    movie_title: str
-    num_tickets: int
-    booking_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    screening_id: str       ##< The ID of the screening being booked.
+    movie_title: str        ##< The title of the movie (for convenience).
+    num_tickets: int        ##< The number of tickets booked.
+    booking_id: str = field(default_factory=lambda: str(uuid.uuid4())) ##< Unique ID for the booking (UUIDv4).
 
 
 # --- Helper Function ---

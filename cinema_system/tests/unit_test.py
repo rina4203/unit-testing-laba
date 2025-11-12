@@ -17,6 +17,7 @@
     For these tests to run correctly, `movie_manager_update.py` must be
     located in the parent directory relative to this file.
 
+@see movie_manager_update.py
 """
 
 import unittest
@@ -55,6 +56,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_01_initial_movies_loaded_successfully(self):
         """!
+        @test
         @brief Verifies that the initial list of 10 movies is loaded.
         @details
             Checks that `get_all_movies()` returns 10 movies
@@ -69,6 +71,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_02_add_unique_movie_successfully(self):
         """!
+        @test
         @brief Verifies successful addition of a new, unique movie.
         @details
             Checks that `add_movie()` correctly increases the total
@@ -91,6 +94,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_03_add_duplicate_movie_is_ignored(self):
         """!
+        @test
         @brief Verifies that attempting to add a duplicate movie is ignored.
         @details
             Checks that `add_movie()` does not add a movie if one
@@ -111,6 +115,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_04_find_movie_by_full_title(self):
         """!
+        @test
         @brief Verifies finding a movie by its full title (case-insensitive).
         """
         # find movie by full title
@@ -120,6 +125,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_05_find_movies_by_keyword(self):
         """!
+        @test
         @brief Verifies finding movies by a keyword (partial match).
         """
         # find movies by keyword 'godfather'
@@ -129,6 +135,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_06_find_non_existent_movie_returns_empty(self):
         """!
+        @test
         @brief Verifies that searching for a non-existent movie returns an empty list.
         """
         # search for non-existent movie returns empty list
@@ -137,6 +144,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_07_add_screening_successfully(self):
         """!
+        @test
         @brief Verifies successful addition of a screening for an existing movie.
         @details
             Checks that `add_screening()` returns a `Screening` object
@@ -149,6 +157,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_08_add_screening_for_non_existent_movie_fails(self):
         """!
+        @test
         @brief Verifies that a screening for a non-existent movie is not created.
         @details
             Checks that `add_screening()` returns `None`
@@ -160,6 +169,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_09_get_screening_by_valid_id(self):
         """!
+        @test
         @brief Verifies finding a screening by its valid ID.
         """
         # find screening by existing ID
@@ -169,6 +179,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_10_get_screening_by_invalid_id_returns_none(self):
         """!
+        @test
         @brief Verifies finding a screening by an invalid (non-existent) ID.
         """
         # find screening by non-existent ID returns None
@@ -177,6 +188,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_11_book_tickets_successfully(self):
         """!
+        @test
         @brief Verifies successful booking of tickets.
         @details
             This test checks that `book_tickets` returns a booking object,
@@ -198,6 +210,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_12_book_tickets_for_non_existent_screening_fails(self):
         """!
+        @test
         @brief Verifies that booking for a non-existent screening returns None.
         """
         # booking for non-existent screening returns None
@@ -206,6 +219,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_13_book_more_tickets_than_available_fails(self):
         """!
+        @test
         @brief Verifies booking more tickets than are available.
         @details
             Checks that `book_tickets` returns `None` and does not change
@@ -219,6 +233,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_14_cancel_booking_successfully(self):
         """!
+        @test
         @brief Verifies successful cancellation of a booking.
         @details
             Checks that `cancel_booking` returns `True`,
@@ -238,6 +253,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_15_cancel_non_existent_booking_fails(self):
         """!
+        @test
         @brief Verifies cancellation of a non-existent booking returns False.
         """
         # cancellation of non-existent booking returns False
@@ -246,6 +262,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_16_get_screenings_for_movie_requires_exact_match(self):
         """!
+        @test
         @brief Verifies `get_screenings_for_movie` uses an exact match.
         @details
             This test checks a bug where `get_screenings_for_movie("Father")`
@@ -264,6 +281,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_17_screenings_are_sorted_chronologically(self):
         """!
+        @test
         @brief Verifies that screenings are sorted by time.
         @details
             Adds screenings in the wrong order (22:00, then 10:00).
@@ -282,6 +300,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_18_cancel_booking_can_result_in_negative_seats(self):
         """!
+        @test
         @brief Verifies that cancellation does not result in negative seats.
         @details
             Simulates a situation where `booked_seats` was externally
@@ -299,6 +318,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
         
     def test_19_add_screening_is_ambiguous_for_same_titles(self):
         """!
+        @test
         @brief Verifies ambiguity when adding screenings for identical titles.
         @details
             Adds two movies named "Solaris" (1972 and 2002).
@@ -316,7 +336,8 @@ class TestCinemaManagerBugs(unittest.TestCase):
 
     def test_20_time_is_string_not_datetime(self):
         """!
-        @brief Verfies that the system validates the time format.
+        @test
+        @brief Verifies that the system validates the time format.
         @details
             Checks if the system will allow creating a screening with an
             invalid time string ("not a date"). Expects None to be returned.
@@ -329,6 +350,7 @@ class TestCinemaManagerBugs(unittest.TestCase):
         
     def test_21_booking_with_non_integer_crashes(self):
         """!
+        @test
         @brief Verifies that passing a non-integer (str) to `book_tickets` does not crash.
         @details
             The system should not crash with a `TypeError` if a user

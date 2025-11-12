@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
-"""
+"""!
 @file movie_manager.py
-@brief Модуль системи управління кінотеатром.
-@details Визначає класи даних для фільмів (Movie), сеансів (Screening)
-         та бронювань (Booking), а також головний клас управління
-         (CinemaManager), який об'єднує всю логіку.
+@author Filonenko Daryna (rina4203)
+@version 1.2
+@date 2025-11-12
+@brief Module defining the core business logic for the cinema system.
+
+@details
+    This module contains the entity classes (dataclasses) `Movie`, `Screening`, `Booking`,
+    and the main service class `CinemaManager`, which handles all operations.
+    It is responsible for managing the movie catalog, screening schedules, and
+    ticket bookings.
+
 """
 
 import json
@@ -12,14 +19,18 @@ import uuid
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional, Dict, Any
 
+# --- Data Classes ---
 
 @dataclass
 class Movie:
-    """
-    @brief Клас-контейнер даних (dataclass) для представлення фільму.
-    @details Містить основну інформацію про фільм, таку як назва, рік,
-             режисер, жанри, актори, тривалість та рейтинг.
-             Виконує валідацію введених даних у методі `__post_init__`.
+    """!
+    @brief A data container class (dataclass) for representing a movie.
+    
+    @details
+        Stores all key information about a movie, such as title, year,
+        director, genres, actors, runtime, and rating.
+        Performs validation on the data immediately after object creation
+        using the `__post_init__` method.
     """
     title: str
     year: int
@@ -30,48 +41,63 @@ class Movie:
     rating: float = 0.0
 
     def __post_init__(self):
-        """
-        @brief Виконує валідацію полів після ініціалізації об'єкта.
-        @throws ValueError Якщо рейтинг виходить за межі [0, 10].
-        @throws ValueError Якщо рік випуску раніше 1888.
-        @throws ValueError Якщо тривалість фільму від'ємна.
+        """!
+        @brief Performs field validation after object initialization.
+        
+        @details
+            This method is automatically called by the dataclass.
+            It checks if the rating, year, and runtime
+            are within acceptable ranges.
+            
+        @throws ValueError If the rating is outside the range [0, 10].
+        @throws ValueError If the release year is earlier than 1888 (the first film).
+        @throws ValueError If the film runtime is negative.
         """
         if not (0 <= self.rating <= 10):
-            raise ValueError("Рейтинг має бути в межах від 0 до 10.")
+            raise ValueError("Rating must be between 0 and 10.")
         if self.year < 1888:
-            raise ValueError("Рік випуску фільму не може бути раніше 1888.")
+            raise ValueError("Movie release year cannot be earlier than 1888.")
         if self.runtime_minutes < 0:
-            raise ValueError("Тривалість фільму не може бути від'ємною.")
+            raise ValueError("Movie runtime cannot be negative.")
 
 @dataclass
 class Screening:
-    """
-    @brief Клас-контейнер даних (dataclass) для представлення кіносеансу.
-    @details Зберігає інформацію про назву фільму, час сеансу,
-             загальну кількість місць та кількість заброньованих місць.
-             Автоматично генерує унікальний `screening_id` при створенні.
+    """!
+    @brief A data container class (dataclass) for representing a movie screening.
+    
+    @details
+        Stores information about the movie title, screening time,
+        total seats, and booked seats.
+        Automatically generates a unique `screening_id` (UUIDv4) upon creation.
     """
     movie_title: str
-    screening_time: str  # Наприклад, "2023-10-27 19:00"
+    screening_time: str  # Example: "2023-10-27 19:00"
     total_seats: int
     screening_id: str = field(default_factory=lambda: str(uuid.uuid4()))
     booked_seats: int = 0
 
     @property
     def available_seats(self) -> int:
-        """
-        @brief Обчислювана властивість для отримання кількості вільних місць.
-        @return int Кількість вільних місць (total_seats - booked_seats).
+        """!
+        @brief A computed property to get the number of available seats.
+        
+        @details
+            Dynamically calculates the number of free seats as the difference
+            between total seats and booked seats.
+            
+        @return int The number of available seats (total_seats - booked_seats).
         """
         return self.total_seats - self.booked_seats
 
 @dataclass
 class Booking:
-    """
-    @brief Клас-контейнер даних (dataclass) для представлення бронювання.
-    @details Зберігає посилання на ID сеансу, назву фільму та
-             кількість заброньованих квитків.
-             Автоматично генерує унікальний `booking_id` при створенні.
+    """!
+    @brief A data container class (dataclass) for representing a booking.
+    
+    @details
+        Stores a reference to the screening ID, the movie title, and
+        the number of tickets booked.
+        Automatically generates a unique `booking_id` (UUIDv4) upon creation.
     """
     screening_id: str
     movie_title: str
@@ -79,112 +105,178 @@ class Booking:
     booking_id: str = field(default_factory=lambda: str(uuid.uuid4()))
 
 
+# --- Helper Function ---
+
 def create_default_movies() -> List[Movie]:
-    """
-    @brief Створює та повертає початкову колекцію з 10 фільмів.
-    @details Використовується для початкового заповнення `CinemaManager`,
-             якщо не надано інший список фільмів.
-    @return List[Movie] Список об'єктів `Movie`.
+    """!
+    @brief Creates and returns an initial collection of 10 movies.
+    
+    @details
+        Used for the initial population of `CinemaManager`
+        if no other list of movies is provided.
+        
+    @return List[Movie] A list of `Movie` objects.
     """
     return [
-        Movie("Втеча з Шоушенка", 1994, "Френк Дарабонт", ["Драма"], ["Тім Роббінс", "Морган Фрімен"], 142, 9.3),
-        Movie("Хрещений батько", 1972, "Френсіс Форд Коппола", ["Кримінал", "Драма"], ["Марлон Брандо", "Аль Пачіно"], 175, 9.2),
-        Movie("Темний лицар", 2008, "Крістофер Нолан", ["Екшн", "Кримінал", "Драма"], ["Крістіан Бейл", "Хіт Леджер"], 152, 9.0),
-        Movie("Кримінальне чтиво", 1994, "Квентін Тарантіно", ["Кримінал", "Драма"], ["Джон Траволта", "Ума Турман", "Семюел Л. Джексон"], 154, 8.9),
-        Movie("Форрест Гамп", 1994, "Роберт Земекіс", ["Драма", "Романтика"], ["Том Хенкс", "Робін Райт"], 142, 8.8),
-        Movie("Початок", 2010, "Крістофер Нолан", ["Екшн", "Пригоди", "Фантастика"], ["Леонардо Ді Капріо", "Джозеф Гордон-Левітт"], 148, 8.8),
-        Movie("Матриця", 1999, "Лана Вачовскі", ["Екшн", "Фантастика"], ["Кіану Рівз", "Лоуренс Фішберн"], 136, 8.7),
-        Movie("Бійцівський клуб", 1999, "Девід Фінчер", ["Драма"], ["Бред Пітт", "Едвард Нортон"], 139, 8.8),
-        Movie("Славні хлопці", 1990, "Мартін Скорсезе", ["Біографія", "Кримінал", "Драма"], ["Роберт Де Ніро", "Рей Ліотта", "Джо Пеші"], 146, 8.7),
-        Movie("Паразити", 2019, "Пон Джун Хо", ["Комедія", "Драма", "Трилер"], ["Сон Кан Хо", "Лі Сон Гюн"], 132, 8.6)
+        Movie("The Shawshank Redemption", 1994, "Frank Darabont", ["Drama"], ["Tim Robbins", "Morgan Freeman"], 142, 9.3),
+        Movie("The Godfather", 1972, "Francis Ford Coppola", ["Crime", "Drama"], ["Marlon Brando", "Al Pacino"], 175, 9.2),
+        Movie("The Dark Knight", 2008, "Christopher Nolan", ["Action", "Crime", "Drama"], ["Christian Bale", "Heath Ledger"], 152, 9.0),
+        Movie("Pulp Fiction", 1994, "Quentin Tarantino", ["Crime", "Drama"], ["John Travolta", "Uma Thurman", "Samuel L. Jackson"], 154, 8.9),
+        Movie("Forrest Gump", 1994, "Robert Zemeckis", ["Drama", "Romance"], ["Tom Hanks", "Robin Wright"], 142, 8.8),
+        Movie("Inception", 2010, "Christopher Nolan", ["Action", "Adventure", "Sci-Fi"], ["Leonardo DiCaprio", "Joseph Gordon-Levitt"], 148, 8.8),
+        Movie("The Matrix", 1999, "Lana Wachowski", ["Action", "Sci-Fi"], ["Keanu Reeves", "Laurence Fishburne"], 136, 8.7),
+        Movie("Fight Club", 1999, "David Fincher", ["Drama"], ["Brad Pitt", "Edward Norton"], 139, 8.8),
+        Movie("Goodfellas", 1990, "Martin Scorsese", ["Biography", "Crime", "Drama"], ["Robert De Niro", "Ray Liotta", "Joe Pesci"], 146, 8.7),
+        Movie("Parasite", 2019, "Bong Joon Ho", ["Comedy", "Drama", "Thriller"], ["Song Kang-ho", "Lee Sun-kyun"], 132, 8.6)
     ]
 
 
+# --- Main Service Class ---
+
 class CinemaManager:
-    """
-    @brief Головний клас для управління кінотеатром.
-    @details Агрегує та керує колекціями фільмів (_movies),
-             сеансів (screenings) та бронювань (bookings).
-             Надає методи для додавання, пошуку та управління
-             цими сутностями.
+    """!
+    @brief The main class for managing the cinema.
+    
+    @details
+        Aggregates and manages the collections of movies (_movies),
+        screenings (screenings), and bookings (bookings).
+        Provides a public API for interacting with the system (add,
+        find, book, cancel).
+        
+    @example
+    @code
+        # Initialize the manager
+        manager = CinemaManager()
+        
+        # Add a screening
+        manager.add_screening("The Matrix", "2025-12-01 21:00", 100)
+        
+        # Find the screening
+        s_list = manager.get_screenings_for_movie("The Matrix")
+        s_id = s_list[0].screening_id
+        
+        # Book tickets
+        booking = manager.book_tickets(s_id, 2)
+        
+        # Cancel the booking
+        if booking:
+            manager.cancel_booking(booking.booking_id)
+    @endcode
+    @see Movie, Screening, Booking
     """
 
     def __init__(self, movies: Optional[List[Movie]] = None):
-        """
-        @brief Конструктор класу CinemaManager.
-        @param movies Необов'язковий список фільмів для ініціалізації.
-                    Якщо `None`, буде використано список за замовчуванням
-                    з `create_default_movies()`.
+        """!
+        @brief Constructor for the CinemaManager class.
+        @param movies
+            An optional list of movies for initialization.
+            If `None`, the default list from
+            `create_default_movies()` will be used.
+        @see create_default_movies()
         """
         self._movies: List[Movie] = movies if movies is not None else create_default_movies()
         self.screenings: List[Screening] = []
         self.bookings: List[Booking] = []
 
     def get_all_movies(self) -> List[Movie]:
-        """
-        @brief Повертає повний список фільмів.
-        @return List[Movie] Список усіх фільмів, що зберігаються в менеджері.
+        """!
+        @brief Returns the complete list of movies.
+        @return List[Movie] A list of all movies stored in the manager.
         """
         return self._movies
         
-    def add_movie(self, movie: Movie):
-        """
-        @brief Додає новий фільм до колекції.
-        @details Виконує перевірку на дублікати за назвою (без урахування
-                 регістру) та роком, перш ніж додати фільм.
-        @param movie Об'єкт `Movie`, який потрібно додати.
+    def add_movie(self, movie: Movie) -> None:
+        """!
+        @brief Adds a new movie to the collection.
+        
+        @details
+            Performs a check for duplicates based on title (case-insensitive)
+            and year.
+            
+        @note
+            If a duplicate is found, the addition is silently ignored.
+            This method is idempotent.
+            
+        @param movie The `Movie` object to add.
         @return None
         """
         for m in self._movies:
             if m.title.lower() == movie.title.lower() and m.year == movie.year:
-                return
+                return  # Ignore if duplicate
         self._movies.append(movie)
 
     def find_movie_by_title(self, title_query: str) -> List[Movie]:
-        """
-        @brief Знаходить фільми за частковою назвою.
-        @details Пошук виконується без урахування регістру.
-        @param title_query Рядок для пошуку в назвах фільмів.
-        @return List[Movie] Список фільмів, що відповідають запиту.
+        """!
+        @brief Finds movies by a partial title.
+        
+        @details
+            The search is case-insensitive.
+            It checks if `title_query` is a substring of the movie titles.
+            
+        @param title_query The string to search for in movie titles.
+        @return List[Movie] A list of movies matching the query (can be empty).
         """
         return [m for m in self._movies if title_query.lower() in m.title.lower()]
 
 
     def add_screening(self, movie_title: str, screening_time: str, total_seats: int) -> Optional[Screening]:
+        """!
+        @brief Adds a new screening for an existing movie.
+        
+        @details
+            Searches for a movie by its **exact** title (case-insensitive).
+            If the movie is found, creates a new `Screening` object
+            and adds it to the `self.screenings` list.
+            
+        @note
+            If multiple movies exist with the same title
+            (e.g., remakes), this method will add the screening for the first one found.
+            
+        @param movie_title The exact title of the movie.
+        @param screening_time The screening time as a string (e.g., "2025-10-28 21:00").
+        @param total_seats The total number of seats in the theater (must be > 0).
+        
+        @return Optional[Screening]
+            The created `Screening` object on success,
+            or `None` if the movie was not found.
+        @see Screening
         """
-        @brief Додає новий сеанс для існуючого фільму.
-        @details Шукає фільм за точною назвою (без урахування регістру).
-                 Якщо фільм знайдено, створює новий об'єкт `Screening`
-                 та додає його до списку сеансів.
-        @param movie_title Точна назва фільму.
-        @param screening_time Час сеансу у форматі рядка (напр., "2025-10-28 21:00").
-        @param total_seats Загальна кількість місць у залі.
-        @return Optional[Screening] Створений об'єкт `Screening` у разі успіху,
-                                 або `None`, якщо фільм не знайдено.
-        """
+        # Find movie by exact title
         found_movies = [m for m in self._movies if m.title.lower() == movie_title.lower()]
         if not found_movies:
-            return None
+            return None  # Movie not found
         
-        new_screening = Screening(movie_title=found_movies[0].title, screening_time=screening_time, total_seats=total_seats)
+        # Use the canonical movie title (with correct capitalization)
+        canonical_title = found_movies[0].title
+        
+        new_screening = Screening(
+            movie_title=canonical_title, 
+            screening_time=screening_time, 
+            total_seats=total_seats
+        )
         self.screenings.append(new_screening)
         return new_screening
 
     def get_screenings_for_movie(self, movie_title: str) -> List[Screening]:
-        """
-        @brief Повертає всі сеанси для вказаного фільму.
-        @details Пошук виконується за частковим збігом назви
-                 (без урахування регістру).
-        @param movie_title Назва фільму (може бути частковою).
-        @return List[Screening] Список сеансів для цього фільму.
+        """!
+        @brief Gets all screenings for a specific movie.
+        
+        @details
+            The search is performed using a **partial** title match
+            (case-insensitive). This differs from `add_screening`.
+            
+        @param movie_title The movie title to search for (can be partial).
+        @return List[Screening] A list of screenings for that movie (can be empty).
+        @see add_screening
         """
         return [s for s in self.screenings if movie_title.lower() in s.movie_title.lower()]
 
     def get_screening_by_id(self, screening_id: str) -> Optional[Screening]:
-        """
-        @brief Знаходить сеанс за його унікальним ID.
-        @param screening_id Унікальний ідентифікатор сеансу.
-        @return Optional[Screening] Знайдений об'єкт `Screening` або `None`.
+        """!
+        @brief Finds a screening by its unique ID.
+        
+        @param screening_id The unique identifier (UUID) of the screening.
+        @return Optional[Screening] The found `Screening` object or `None`.
         """
         for screening in self.screenings:
             if screening.screening_id == screening_id:
@@ -193,27 +285,39 @@ class CinemaManager:
 
 
     def book_tickets(self, screening_id: str, num_tickets: int) -> Optional[Booking]:
-        """
-        @brief Бронює вказану кількість квитків на сеанс.
-        @details Перевіряє, чи існує сеанс, чи `num_tickets` є додатним
-                 числом, і чи достатньо вільних місць.
-                 Якщо всі умови виконані, оновлює кількість заброньованих
-                 місць на сеансі та створює новий об'єкт `Booking`.
-        @param screening_id ID сеансу, на який бронюються квитки.
-        @param num_tickets Кількість квитків для бронювання.
-        @return Optional[Booking] Створений об'єкт `Booking` у разі успіху,
-                                 або `None`, якщо бронювання не вдалося
-                                 (невірний ID, недостатньо місць,
-                                 некоректна кількість квитків).
+        """!
+        @brief Books a specified number of tickets for a screening.
+        
+        @details
+            Checks if the screening exists, if `num_tickets` is a positive
+            number, and if there are enough available seats.
+            If all conditions are met, updates `booked_seats`
+            on the screening and creates a new `Booking` object.
+            
+        @param screening_id The ID of the screening to book.
+        @param num_tickets The number of tickets to book.
+        
+        @return Optional[Booking]
+            The created `Booking` object on success,
+            or `None` if the booking failed
+            (invalid ID, not enough seats, 0 or negative
+            number of tickets).
+        @see Booking, Screening.available_seats
         """
         screening = self.get_screening_by_id(screening_id)
+        
+        # Validation 1: Screening must exist
         if not screening:
             return None
         
+        # Validation 2: Must book a positive number of tickets and seats must be available
         if not (0 < num_tickets <= screening.available_seats):
             return None
         
+        # Update state
         screening.booked_seats += num_tickets
+        
+        # Create booking record
         new_booking = Booking(
             screening_id=screening_id, 
             movie_title=screening.movie_title,
@@ -223,26 +327,41 @@ class CinemaManager:
         return new_booking
 
     def cancel_booking(self, booking_id: str) -> bool:
+        """!
+        @brief Cancels an existing booking by its ID.
+        
+        @details
+            Finds the booking by `booking_id`. If found,
+            it locates the corresponding screening and returns
+            the booked tickets (decrements `booked_seats`).
+            It then removes the `Booking` object from the `self.bookings` list.
+            
+        @note
+            If the screening associated with the booking was deleted,
+            the booking will still be canceled (removed from the list),
+            but the seats will not be returned.
+            Uses `max(0, ...)` to prevent negative seat counts
+            in case of data error.
+            
+        @param booking_id The unique ID of the booking to cancel.
+        
+        @return bool `True` if the booking was successfully found
+                     and canceled, `False` otherwise.
         """
-        @brief Скасовує бронювання за його ID.
-        @details Знаходить бронювання за `booking_id`. Якщо знайдено,
-                 знаходить відповідний сеанс та повертає
-                 заброньовані квитки (зменшує `booked_seats`).
-                 Видаляє об'єкт `Booking` зі списку.
-        @param booking_id Унікальний ідентифікатор бронювання,
-                          яке потрібно скасувати.
-        @return bool `True`, якщо бронювання було успішно знайдено
-                     та скасовано, `False` в іншому випадку.
-        """
+        # Find the booking by ID
         booking_to_cancel = next((b for b in self.bookings if b.booking_id == booking_id), None)
         
         if not booking_to_cancel:
-            return False
+            return False  # Booking not found
 
+        # Find the corresponding screening
         screening = self.get_screening_by_id(booking_to_cancel.screening_id)
+        
+        # Return the seats if the screening still exists
         if screening:
-            # Повертаємо місця, гарантуючи, що кількість не стане від'ємною
+            # Return seats, ensuring the count cannot go below zero
             screening.booked_seats = max(0, screening.booked_seats - booking_to_cancel.num_tickets)
         
+        # Remove the booking
         self.bookings.remove(booking_to_cancel)
         return True

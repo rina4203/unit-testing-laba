@@ -1,4 +1,3 @@
-
 # Cinema Management System
 
 A console-based application for managing a cinema. This project was created as part of the **"Software Development Tools"** course and demonstrates the full development cycle using Git—from repository creation and branching to writing unit tests and completing work through a Pull Request.
@@ -34,7 +33,11 @@ The program provides basic functionality for managing a cinema: handling a movie
     cd unit-testing-laba
     ```
 
-3.  Run the application. (***Note: The main entry point file needs to be specified.***)
+3.  Run the application:
+
+    ```bash
+    python main.py
+    ```
 
 ## Testing
 
@@ -51,16 +54,16 @@ python -m unittest discover cinema_system/tests
 ```
 .
 ├── cinema_system/
-│   └── tests/
-│       ├── movie_manager_update.py # Updated manager logic (for testing)
-│       ├── unit tests(discribe).docx # Test descriptions
-│       └── unit_test.py          # Unit tests for the core logic
-├── movie.py                # Movie data class
-├── movie_manager.py          # Core logic (CinemaManager class)
-├── .gitignore              # Ignored files and directories
-├── LICENSE                 # MIT License file
-├── README.md               # This file
-└── ЛБ.docx                 # Lab report document
+│   ├── tests/
+│   │   ├── movie_manager_update.py # Updated manager logic (for testing)
+│   │   └── unit_test.py            # Unit tests for the core logic
+│   ├── movie.py                    # Movie data class
+│   └── movie_manager.py            # Core logic (CinemaManager class)
+├── main.py                         # Main entry point for the application
+├── .gitignore                      # Ignored files and directories
+├── Doxyfile                        # Doxygen configuration file
+├── LICENSE                         # MIT License file
+└── README.md                       # This file
 ```
 
 ## Contributing & Lab Notes
@@ -73,9 +76,17 @@ This repository is an educational project. Its goal is to demonstrate a proper G
 
 Feel free to open issues or suggest improvements.
 
-## Documentation
+## Documentation 📖
 
 This project's documentation is automatically generated from in-code comments using **Doxygen** and **Graphviz**.
+
+### Live Version
+
+The documentation is automatically built and deployed to **GitHub Pages** on every push to the `main` branch.
+
+**[➡️ View Live Documentation ⬅️](https://rina4203.github.io/unit-testing-laba/)**
+
+*(**Note:** Please allow 1-2 minutes for the site to update after a merge to `main`.)*
 
 ### Local Generation
 
@@ -101,6 +112,7 @@ If you wish to generate the documentation on your local machine:
     # (for Windows)
     start docs/html/index.html
     ```
+
 ## License
 
 This project is licensed under the **MIT License**. See the `LICENSE` file for details.
